@@ -14,7 +14,7 @@ A simple, efficient web application for managing vendor orders in a small shop. 
 
 ## Live Demo
 
-Visit: [https://supplier_manager.crawlingsloth.cloud](https://supplier_manager.crawlingsloth.cloud)
+Visit: [https://supplier-manager.crawlingsloth.cloud](https://supplier-manager.crawlingsloth.cloud)
 
 ## Usage
 
@@ -64,7 +64,7 @@ git push -u origin main
 
 1. Go to repository Settings → Pages
 2. Source: GitHub Actions
-3. Custom domain: `supplier_manager.crawlingsloth.cloud`
+3. Custom domain: `supplier-manager.crawlingsloth.cloud`
 4. The CNAME file in the public directory handles the custom domain
 
 ## Browser Support
