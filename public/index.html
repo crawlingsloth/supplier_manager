@@ -13,13 +13,22 @@
     <!-- Top Bar -->
     <header class="top-bar">
         <h1>Shop Orders</h1>
-        <div class="top-bar-actions">
-            <input type="text" id="searchInput" placeholder="Search items..." class="search-input">
-            <button id="saveSessionBtn" class="btn btn-secondary" title="Ctrl+S">Save Session</button>
-            <button id="loadSessionBtn" class="btn btn-secondary">Load Previous</button>
-            <button id="newSessionBtn" class="btn btn-danger">New Session</button>
-        </div>
+        <nav class="tab-navigation">
+            <button class="tab-btn active" data-tab="orders">Orders</button>
+            <button class="tab-btn" data-tab="mapping">Item Mapping</button>
+        </nav>
     </header>
+
+    <!-- Orders Tab Content -->
+    <div id="ordersTab" class="tab-content active">
+        <div class="orders-top-bar">
+            <input type="text" id="searchInput" placeholder="Search items..." class="search-input">
+            <div class="top-bar-actions">
+                <button id="saveSessionBtn" class="btn btn-secondary" title="Ctrl+S">Save Session</button>
+                <button id="loadSessionBtn" class="btn btn-secondary">Load Previous</button>
+                <button id="newSessionBtn" class="btn btn-danger">New Session</button>
+            </div>
+        </div>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -92,6 +101,102 @@
             </div>
         </section>
     </main>
+    </div>
+
+    <!-- Item Mapping Tab Content -->
+    <div id="mappingTab" class="tab-content">
+        <div class="mapping-container">
+            <!-- Supplier Management Section -->
+            <section class="supplier-management" id="supplierManagement">
+                <h2>Manage Suppliers</h2>
+                <div class="supplier-input-group">
+                    <input type="text" id="newSupplierInput" placeholder="Enter supplier name" class="form-input">
+                    <button id="addSupplierBtn" class="btn btn-primary">Add Supplier</button>
+                </div>
+                <div id="suppliersList" class="suppliers-list">
+                    <p class="empty-message">No suppliers added yet. Add your first supplier to begin.</p>
+                </div>
+                <button id="proceedToUploadBtn" class="btn btn-primary btn-large" style="display:none;">
+                    Next: Upload Items
+                </button>
+            </section>
+
+            <!-- CSV Upload Section -->
+            <section class="csv-upload-section" id="csvUploadSection" style="display:none;">
+                <h2>Upload Items List</h2>
+                <p class="instruction-text">Upload a CSV file with item names. The file should have items in the first column.</p>
+                <div class="upload-area">
+                    <input type="file" id="csvFileInput" accept=".csv" class="file-input">
+                    <label for="csvFileInput" class="file-label">
+                        <span class="upload-icon">📄</span>
+                        <span>Choose CSV File</span>
+                    </label>
+                    <p id="fileNameDisplay" class="file-name"></p>
+                </div>
+                <button id="startMappingBtn" class="btn btn-primary btn-large" style="display:none;">
+                    Start Mapping
+                </button>
+                <button id="backToSuppliersBtn" class="btn btn-secondary">
+                    Back to Suppliers
+                </button>
+            </section>
+
+            <!-- Item Mapping Section -->
+            <section class="item-mapping-section" id="itemMappingSection" style="display:none;">
+                <div class="mapping-header">
+                    <h2>Map Items to Suppliers</h2>
+                    <div class="progress-indicator">
+                        <span id="progressText">Item 1 of 0</span>
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <h3 id="currentItemName" class="current-item-name">Item Name</h3>
+                </div>
+
+                <div class="supplier-buttons" id="supplierButtons">
+                    <!-- Supplier buttons will be generated here -->
+                </div>
+
+                <div class="mapping-actions">
+                    <button id="skipItemBtn" class="btn btn-secondary btn-large">
+                        Skip Item
+                    </button>
+                </div>
+
+                <div class="mapping-footer">
+                    <button id="finishMappingBtn" class="btn btn-primary" style="display:none;">
+                        Finish & Download
+                    </button>
+                    <button id="restartMappingBtn" class="btn btn-secondary">
+                        Restart Mapping
+                    </button>
+                </div>
+            </section>
+
+            <!-- Completion Section -->
+            <section class="completion-section" id="completionSection" style="display:none;">
+                <div class="completion-card">
+                    <h2>Mapping Complete!</h2>
+                    <p class="completion-stats" id="completionStats"></p>
+                    <div class="completion-actions">
+                        <button id="downloadMappingBtn" class="btn btn-primary btn-large">
+                            Download Mapped Items (CSV)
+                        </button>
+                        <button id="remapItemsBtn" class="btn btn-secondary">
+                            Map More Items
+                        </button>
+                        <button id="goToOrdersBtn" class="btn btn-secondary">
+                            Go to Orders
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
 
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>

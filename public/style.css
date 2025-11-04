@@ -564,3 +564,348 @@ body {
         width: 100%;
     }
 }
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-dark);
+    background-color: var(--bg-gray);
+}
+
+.tab-btn.active {
+    color: var(--primary-green);
+    border-bottom-color: var(--primary-green);
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Orders Tab Specific */
+.orders-top-bar {
+    background-color: var(--card-white);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Mapping Container */
+.mapping-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Common Section Styles */
+.supplier-management,
+.csv-upload-section,
+.item-mapping-section,
+.completion-section {
+    background-color: var(--card-white);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.supplier-management h2,
+.csv-upload-section h2,
+.item-mapping-section h2,
+.completion-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+}
+
+/* Supplier Management */
+.supplier-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-gray);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+}
+
+.suppliers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.supplier-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-gray);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.supplier-item:hover {
+    background-color: #e0e0e0;
+}
+
+.supplier-name {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.delete-supplier-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.delete-supplier-btn:hover {
+    color: var(--danger-red);
+}
+
+/* CSV Upload Section */
+.instruction-text {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.upload-area {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    border: 2px dashed var(--border-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--bg-gray);
+}
+
+.file-label:hover {
+    border-color: var(--primary-green);
+    background-color: #e8f5e9;
+}
+
+.upload-icon {
+    font-size: 3rem;
+}
+
+.file-name {
+    margin-top: 1rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* Item Mapping Section */
+.mapping-header {
+    margin-bottom: 2rem;
+}
+
+.progress-indicator {
+    margin-top: 1rem;
+}
+
+#progressText {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-gray);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary-green);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.item-card {
+    background-color: var(--bg-gray);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 2rem;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.current-item-name {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    word-break: break-word;
+}
+
+.supplier-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.supplier-assign-btn {
+    padding: 1.25rem;
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-height: 60px;
+}
+
+.supplier-assign-btn:hover {
+    background-color: var(--primary-green-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.supplier-assign-btn:active {
+    transform: translateY(0);
+}
+
+.mapping-actions {
+    margin-bottom: 2rem;
+}
+
+.mapping-footer {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Completion Section */
+.completion-card {
+    text-align: center;
+}
+
+.completion-stats {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+}
+
+.completion-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Mobile Responsive for Mapping Tab */
+@media (max-width: 768px) {
+    .mapping-container {
+        padding: 0.5rem;
+    }
+
+    .supplier-management,
+    .csv-upload-section,
+    .item-mapping-section,
+    .completion-section {
+        padding: 1.5rem;
+    }
+
+    .current-item-name {
+        font-size: 1.5rem;
+    }
+
+    .supplier-input-group {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .orders-top-bar {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .current-item-name {
+        font-size: 1.3rem;
+    }
+
+    .supplier-assign-btn {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+
+    .mapping-footer {
+        flex-direction: column;
+    }
+}

@@ -5,7 +5,9 @@ const Storage = {
         CURRENT_SESSION: 'currentSession',
         ITEM_FREQUENCY: 'itemFrequency',
         VENDORS: 'vendors',
-        SAVED_SESSIONS: 'savedSessions'
+        SAVED_SESSIONS: 'savedSessions',
+        SUPPLIERS: 'suppliers',
+        ITEM_MAPPINGS: 'itemMappings'
     },
 
     get(key) {
@@ -59,6 +61,22 @@ const Storage = {
 
     setSavedSessions(sessions) {
         return this.set(this.KEYS.SAVED_SESSIONS, sessions);
+    },
+
+    getSuppliers() {
+        return this.get(this.KEYS.SUPPLIERS) || [];
+    },
+
+    setSuppliers(suppliers) {
+        return this.set(this.KEYS.SUPPLIERS, suppliers);
+    },
+
+    getItemMappings() {
+        return this.get(this.KEYS.ITEM_MAPPINGS) || {};
+    },
+
+    setItemMappings(mappings) {
+        return this.set(this.KEYS.ITEM_MAPPINGS, mappings);
     }
 };
 
@@ -555,8 +573,368 @@ function hideConfirmDialog() {
     confirmDialog.classList.remove('show');
 }
 
+// ============================================
+// ITEM MAPPING TAB FUNCTIONALITY
+// ============================================
+
+// Mapping State
+let suppliers = Storage.getSuppliers();
+let itemMappings = Storage.getItemMappings();
+let itemsToMap = [];
+let currentItemIndex = 0;
+let uploadedFileName = '';
+
+// Tab Switching
+function setupTabNavigation() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+            switchTab(targetTab);
+        });
+    });
+}
+
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `${tabName}Tab`);
+    });
+
+    // Initialize mapping tab if switched to it
+    if (tabName === 'mapping') {
+        initMappingTab();
+    }
+}
+
+// Initialize Mapping Tab
+function initMappingTab() {
+    suppliers = Storage.getSuppliers();
+    itemMappings = Storage.getItemMappings();
+    renderSuppliersList();
+    setupMappingEventListeners();
+}
+
+// Supplier Management
+function setupMappingEventListeners() {
+    const addSupplierBtn = document.getElementById('addSupplierBtn');
+    const newSupplierInput = document.getElementById('newSupplierInput');
+    const proceedToUploadBtn = document.getElementById('proceedToUploadBtn');
+    const backToSuppliersBtn = document.getElementById('backToSuppliersBtn');
+    const csvFileInput = document.getElementById('csvFileInput');
+    const startMappingBtn = document.getElementById('startMappingBtn');
+    const skipItemBtn = document.getElementById('skipItemBtn');
+    const restartMappingBtn = document.getElementById('restartMappingBtn');
+    const finishMappingBtn = document.getElementById('finishMappingBtn');
+    const downloadMappingBtn = document.getElementById('downloadMappingBtn');
+    const remapItemsBtn = document.getElementById('remapItemsBtn');
+    const goToOrdersBtn = document.getElementById('goToOrdersBtn');
+
+    // Remove existing listeners
+    if (addSupplierBtn) {
+        addSupplierBtn.replaceWith(addSupplierBtn.cloneNode(true));
+        document.getElementById('addSupplierBtn').addEventListener('click', handleAddSupplier);
+    }
+
+    if (newSupplierInput) {
+        newSupplierInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddSupplier();
+            }
+        });
+    }
+
+    if (proceedToUploadBtn) {
+        proceedToUploadBtn.replaceWith(proceedToUploadBtn.cloneNode(true));
+        document.getElementById('proceedToUploadBtn').addEventListener('click', showUploadSection);
+    }
+
+    if (backToSuppliersBtn) {
+        backToSuppliersBtn.replaceWith(backToSuppliersBtn.cloneNode(true));
+        document.getElementById('backToSuppliersBtn').addEventListener('click', showSupplierSection);
+    }
+
+    if (csvFileInput) {
+        csvFileInput.replaceWith(csvFileInput.cloneNode(true));
+        document.getElementById('csvFileInput').addEventListener('change', handleFileUpload);
+    }
+
+    if (startMappingBtn) {
+        startMappingBtn.replaceWith(startMappingBtn.cloneNode(true));
+        document.getElementById('startMappingBtn').addEventListener('click', startItemMapping);
+    }
+
+    if (skipItemBtn) {
+        skipItemBtn.replaceWith(skipItemBtn.cloneNode(true));
+        document.getElementById('skipItemBtn').addEventListener('click', skipCurrentItem);
+    }
+
+    if (restartMappingBtn) {
+        restartMappingBtn.replaceWith(restartMappingBtn.cloneNode(true));
+        document.getElementById('restartMappingBtn').addEventListener('click', restartMapping);
+    }
+
+    if (finishMappingBtn) {
+        finishMappingBtn.replaceWith(finishMappingBtn.cloneNode(true));
+        document.getElementById('finishMappingBtn').addEventListener('click', finishMapping);
+    }
+
+    if (downloadMappingBtn) {
+        downloadMappingBtn.replaceWith(downloadMappingBtn.cloneNode(true));
+        document.getElementById('downloadMappingBtn').addEventListener('click', downloadMappedItems);
+    }
+
+    if (remapItemsBtn) {
+        remapItemsBtn.replaceWith(remapItemsBtn.cloneNode(true));
+        document.getElementById('remapItemsBtn').addEventListener('click', () => {
+            showSupplierSection();
+            document.getElementById('completionSection').style.display = 'none';
+        });
+    }
+
+    if (goToOrdersBtn) {
+        goToOrdersBtn.replaceWith(goToOrdersBtn.cloneNode(true));
+        document.getElementById('goToOrdersBtn').addEventListener('click', () => switchTab('orders'));
+    }
+}
+
+function handleAddSupplier() {
+    const input = document.getElementById('newSupplierInput');
+    const supplierName = input.value.trim();
+
+    if (!supplierName) {
+        showToast('Please enter a supplier name', 'error');
+        return;
+    }
+
+    if (suppliers.includes(supplierName)) {
+        showToast('Supplier already exists', 'error');
+        return;
+    }
+
+    suppliers.push(supplierName);
+    Storage.setSuppliers(suppliers);
+    renderSuppliersList();
+    input.value = '';
+    input.focus();
+    showToast('Supplier added!', 'success');
+}
+
+function renderSuppliersList() {
+    const suppliersList = document.getElementById('suppliersList');
+    const proceedBtn = document.getElementById('proceedToUploadBtn');
+
+    if (suppliers.length === 0) {
+        suppliersList.innerHTML = '<p class="empty-message">No suppliers added yet. Add your first supplier to begin.</p>';
+        proceedBtn.style.display = 'none';
+    } else {
+        suppliersList.innerHTML = suppliers.map(supplier => `
+            <div class="supplier-item">
+                <span class="supplier-name">${supplier}</span>
+                <button class="delete-supplier-btn" onclick="deleteSupplier('${supplier}')" title="Delete supplier">
+                    ✕
+                </button>
+            </div>
+        `).join('');
+        proceedBtn.style.display = 'block';
+    }
+}
+
+function deleteSupplier(supplierName) {
+    showConfirmDialog(
+        'Delete Supplier',
+        `Are you sure you want to delete ${supplierName}?`,
+        () => {
+            suppliers = suppliers.filter(s => s !== supplierName);
+            Storage.setSuppliers(suppliers);
+            renderSuppliersList();
+            showToast('Supplier deleted', 'success');
+        }
+    );
+}
+
+// Section Navigation
+function showUploadSection() {
+    document.getElementById('supplierManagement').style.display = 'none';
+    document.getElementById('csvUploadSection').style.display = 'block';
+}
+
+function showSupplierSection() {
+    document.getElementById('supplierManagement').style.display = 'block';
+    document.getElementById('csvUploadSection').style.display = 'none';
+    document.getElementById('itemMappingSection').style.display = 'none';
+}
+
+// CSV Upload and Parsing
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    uploadedFileName = file.name;
+    document.getElementById('fileNameDisplay').textContent = `Selected: ${file.name}`;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        parseCSV(text);
+    };
+    reader.readAsText(file);
+}
+
+function parseCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    itemsToMap = [];
+
+    lines.forEach((line, index) => {
+        // Skip header row if it looks like a header
+        if (index === 0 && line.toLowerCase().includes('item')) return;
+
+        const columns = line.split(',').map(col => col.trim().replace(/^"|"$/g, ''));
+        const itemName = columns[0];
+
+        if (itemName) {
+            itemsToMap.push(itemName);
+        }
+    });
+
+    if (itemsToMap.length === 0) {
+        showToast('No items found in CSV', 'error');
+        return;
+    }
+
+    document.getElementById('startMappingBtn').style.display = 'block';
+    showToast(`${itemsToMap.length} items loaded!`, 'success');
+}
+
+function startItemMapping() {
+    if (itemsToMap.length === 0) {
+        showToast('Please upload a CSV file first', 'error');
+        return;
+    }
+
+    currentItemIndex = 0;
+    document.getElementById('csvUploadSection').style.display = 'none';
+    document.getElementById('itemMappingSection').style.display = 'block';
+    renderSupplierButtons();
+    showCurrentItem();
+}
+
+function renderSupplierButtons() {
+    const container = document.getElementById('supplierButtons');
+    container.innerHTML = suppliers.map(supplier => `
+        <button class="supplier-assign-btn" onclick="assignItemToSupplier('${supplier}')">
+            ${supplier}
+        </button>
+    `).join('');
+}
+
+function showCurrentItem() {
+    if (currentItemIndex >= itemsToMap.length) {
+        finishMapping();
+        return;
+    }
+
+    const currentItem = itemsToMap[currentItemIndex];
+    document.getElementById('currentItemName').textContent = currentItem;
+    document.getElementById('progressText').textContent = `Item ${currentItemIndex + 1} of ${itemsToMap.length}`;
+
+    const progress = ((currentItemIndex) / itemsToMap.length) * 100;
+    document.getElementById('progressFill').style.width = `${progress}%`;
+
+    // Show finish button if on last item
+    if (currentItemIndex === itemsToMap.length - 1) {
+        document.getElementById('finishMappingBtn').style.display = 'block';
+    }
+}
+
+function assignItemToSupplier(supplierName) {
+    const currentItem = itemsToMap[currentItemIndex];
+    itemMappings[currentItem] = supplierName;
+    Storage.setItemMappings(itemMappings);
+
+    showToast(`Assigned to ${supplierName}`, 'success');
+    currentItemIndex++;
+    showCurrentItem();
+}
+
+function skipCurrentItem() {
+    currentItemIndex++;
+    showCurrentItem();
+}
+
+function restartMapping() {
+    showConfirmDialog(
+        'Restart Mapping',
+        'Are you sure you want to restart? Your current progress will be saved.',
+        () => {
+            currentItemIndex = 0;
+            showCurrentItem();
+            document.getElementById('finishMappingBtn').style.display = 'none';
+        }
+    );
+}
+
+function finishMapping() {
+    const mappedCount = Object.keys(itemMappings).length;
+    const totalCount = itemsToMap.length;
+
+    document.getElementById('itemMappingSection').style.display = 'none';
+    document.getElementById('completionSection').style.display = 'block';
+    document.getElementById('completionStats').textContent =
+        `You mapped ${mappedCount} out of ${totalCount} items to suppliers.`;
+
+    showToast('Mapping complete!', 'success');
+}
+
+function downloadMappedItems() {
+    const mappings = Storage.getItemMappings();
+    if (Object.keys(mappings).length === 0) {
+        showToast('No mapped items to download', 'error');
+        return;
+    }
+
+    let csvContent = 'Item,Supplier\n';
+    for (const [item, supplier] of Object.entries(mappings)) {
+        csvContent += `"${item}","${supplier}"\n`;
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `item_mappings_${date}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    showToast('Downloaded!', 'success');
+}
+
+// Update vendor selector with mapped suppliers
+function updateVendorFromMapping() {
+    const itemName = itemNameInput.value.trim();
+    if (itemName && itemMappings[itemName]) {
+        vendorSelect.value = itemMappings[itemName];
+    }
+}
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    setupTabNavigation();
+    initMappingTab();
+
+    // Update vendor selection when item name changes (check mappings)
+    if (itemNameInput) {
+        itemNameInput.addEventListener('input', updateVendorFromMapping);
+    }
+});
 
 // Service Worker for offline support (optional)
 if ('serviceWorker' in navigator) {
