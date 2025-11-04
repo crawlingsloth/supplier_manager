@@ -124,7 +124,11 @@
             <!-- CSV Upload Section -->
             <section class="csv-upload-section" id="csvUploadSection" style="display:none;">
                 <h2>Upload Items List</h2>
-                <p class="instruction-text">Upload a CSV file with item names. The file should have items in the first column.</p>
+                <p class="instruction-text">
+                    Upload a CSV file with your items. Two formats supported:<br>
+                    <strong>Option 1:</strong> Item,Supplier (auto-imports mappings)<br>
+                    <strong>Option 2:</strong> Item only (manual mapping one by one)
+                </p>
                 <div class="upload-area">
                     <input type="file" id="csvFileInput" accept=".csv" class="file-input">
                     <label for="csvFileInput" class="file-label">

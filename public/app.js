@@ -109,6 +109,7 @@ function init() {
     renderVendorCards();
     renderFrequentItems();
     updateVendorSuggestions();
+    updateItemSuggestions();
     itemNameInput.focus();
     checkLocalStorageAvailability();
 }
@@ -345,9 +346,15 @@ function renderFrequentItems() {
 
 function updateItemSuggestions() {
     const datalist = document.getElementById('itemSuggestions');
-    const items = Object.keys(itemFrequency).sort();
 
-    datalist.innerHTML = items.map(item =>
+    // Combine items from frequency tracking and mappings
+    const frequencyItems = Object.keys(itemFrequency);
+    const mappedItems = Object.keys(itemMappings);
+
+    // Merge and deduplicate
+    const allItems = [...new Set([...frequencyItems, ...mappedItems])].sort();
+
+    datalist.innerHTML = allItems.map(item =>
         `<option value="${item}">`
     ).join('');
 }
@@ -610,6 +617,13 @@ function switchTab(tabName) {
     if (tabName === 'mapping') {
         initMappingTab();
     }
+
+    // Refresh autocomplete when switching to orders tab
+    if (tabName === 'orders') {
+        itemMappings = Storage.getItemMappings();
+        updateItemSuggestions();
+        updateVendorSuggestions();
+    }
 }
 
 // Initialize Mapping Tab
@@ -790,26 +804,82 @@ function handleFileUpload(event) {
 function parseCSV(text) {
     const lines = text.split('\n').filter(line => line.trim());
     itemsToMap = [];
+    let hasSupplierColumn = false;
+    let importedMappings = {};
+
+    // Check first line to see if it has supplier column
+    if (lines.length > 0) {
+        const firstLine = lines[0].split('\t').length > 1
+            ? lines[0].split('\t')
+            : lines[0].split(',');
+
+        const columns = firstLine.map(col => col.trim().replace(/^"|"$/g, ''));
+
+        // Check if we have 2+ columns (Item and Supplier)
+        if (columns.length >= 2) {
+            hasSupplierColumn = true;
+        }
+    }
 
     lines.forEach((line, index) => {
-        // Skip header row if it looks like a header
-        if (index === 0 && line.toLowerCase().includes('item')) return;
+        // Handle both tab and comma separated
+        const separator = line.includes('\t') ? '\t' : ',';
+        const columns = line.split(separator).map(col => col.trim().replace(/^"|"$/g, ''));
 
-        const columns = line.split(',').map(col => col.trim().replace(/^"|"$/g, ''));
+        // Skip header row if it looks like a header
+        if (index === 0 && (line.toLowerCase().includes('item') || line.toLowerCase().includes('supplier'))) {
+            return;
+        }
+
         const itemName = columns[0];
 
-        if (itemName) {
+        if (!itemName) return;
+
+        if (hasSupplierColumn && columns.length >= 2) {
+            const supplierName = columns[1];
+            if (supplierName) {
+                // Direct import mode - save mapping immediately
+                importedMappings[itemName] = supplierName;
+
+                // Add supplier to suppliers list if not exists
+                if (!suppliers.includes(supplierName)) {
+                    suppliers.push(supplierName);
+                }
+            }
+        } else {
+            // Manual mapping mode
             itemsToMap.push(itemName);
         }
     });
 
+    // If we imported direct mappings, save and show completion
+    if (Object.keys(importedMappings).length > 0) {
+        // Merge with existing mappings
+        itemMappings = { ...itemMappings, ...importedMappings };
+        Storage.setItemMappings(itemMappings);
+        Storage.setSuppliers(suppliers);
+
+        // Show completion directly
+        document.getElementById('csvUploadSection').style.display = 'none';
+        document.getElementById('completionSection').style.display = 'block';
+        document.getElementById('completionStats').textContent =
+            `Successfully imported ${Object.keys(importedMappings).length} item-supplier mappings!`;
+
+        showToast(`Imported ${Object.keys(importedMappings).length} mappings!`, 'success');
+
+        // Update autocomplete in orders tab
+        updateItemSuggestions();
+        return;
+    }
+
+    // Manual mapping mode
     if (itemsToMap.length === 0) {
         showToast('No items found in CSV', 'error');
         return;
     }
 
     document.getElementById('startMappingBtn').style.display = 'block';
-    showToast(`${itemsToMap.length} items loaded!`, 'success');
+    showToast(`${itemsToMap.length} items loaded for manual mapping!`, 'success');
 }
 
 function startItemMapping() {

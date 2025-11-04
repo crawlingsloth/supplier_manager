@@ -50,7 +50,30 @@ Visit: [https://supplier-manager.crawlingsloth.cloud](https://supplier-manager.c
 
 ### CSV Format for Item Upload
 
-Your CSV should have items in the first column:
+**Option 1: Item + Supplier (Recommended for Quick Import)**
+
+Upload a CSV with both Item and Supplier columns. This will automatically import all mappings:
+
+```
+Item,Supplier
+Johnson's Baby lotion 200ml,MU
+Fogg Victor Fragrance Body Spray 120ml,INTR
+Dove Deodorant go fresh Grapefruit 150ml,EKI
+Jelly Barbeque Sticks,MHA
+Munchee Milk Short Cake Biscuits 85g,LOTUS
+```
+
+Or tab-separated:
+```
+Item	Supplier
+Johnson's Baby lotion 200ml	MU
+Fogg Victor Fragrance Body Spray 120ml	INTR
+```
+
+**Option 2: Items Only (Manual Mapping)**
+
+Upload a CSV with just items if you want to map them manually one by one:
+
 ```
 Item Name
 Rice Bags
@@ -58,12 +81,7 @@ Sugar
 Cooking Oil
 ```
 
-Or with a header:
-```
-Item,Description
-Rice Bags,25kg bags
-Sugar,White refined
-```
+With Option 1, items will be instantly available in the Orders tab with autocomplete, and the supplier will auto-fill when you type the item name.
 
 ## Keyboard Shortcuts
 
