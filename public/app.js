@@ -643,11 +643,18 @@ function setupMappingEventListeners() {
     const csvFileInput = document.getElementById('csvFileInput');
     const startMappingBtn = document.getElementById('startMappingBtn');
     const skipItemBtn = document.getElementById('skipItemBtn');
+    const previousItemBtn = document.getElementById('previousItemBtn');
     const restartMappingBtn = document.getElementById('restartMappingBtn');
     const finishMappingBtn = document.getElementById('finishMappingBtn');
     const downloadMappingBtn = document.getElementById('downloadMappingBtn');
     const remapItemsBtn = document.getElementById('remapItemsBtn');
     const goToOrdersBtn = document.getElementById('goToOrdersBtn');
+    const viewMappingsBtn = document.getElementById('viewMappingsBtn');
+    const viewMappingsFromCompletionBtn = document.getElementById('viewMappingsFromCompletionBtn');
+    const backFromHistoryBtn = document.getElementById('backFromHistoryBtn');
+    const mappingsSearchInput = document.getElementById('mappingsSearchInput');
+    const downloadMappingsFromHistoryBtn = document.getElementById('downloadMappingsFromHistoryBtn');
+    const clearAllMappingsBtn = document.getElementById('clearAllMappingsBtn');
 
     // Remove existing listeners
     if (addSupplierBtn) {
@@ -689,6 +696,11 @@ function setupMappingEventListeners() {
         document.getElementById('skipItemBtn').addEventListener('click', skipCurrentItem);
     }
 
+    if (previousItemBtn) {
+        previousItemBtn.replaceWith(previousItemBtn.cloneNode(true));
+        document.getElementById('previousItemBtn').addEventListener('click', previousItem);
+    }
+
     if (restartMappingBtn) {
         restartMappingBtn.replaceWith(restartMappingBtn.cloneNode(true));
         document.getElementById('restartMappingBtn').addEventListener('click', restartMapping);
@@ -715,6 +727,35 @@ function setupMappingEventListeners() {
     if (goToOrdersBtn) {
         goToOrdersBtn.replaceWith(goToOrdersBtn.cloneNode(true));
         document.getElementById('goToOrdersBtn').addEventListener('click', () => switchTab('orders'));
+    }
+
+    if (viewMappingsBtn) {
+        viewMappingsBtn.replaceWith(viewMappingsBtn.cloneNode(true));
+        document.getElementById('viewMappingsBtn').addEventListener('click', showMappingsHistory);
+    }
+
+    if (viewMappingsFromCompletionBtn) {
+        viewMappingsFromCompletionBtn.replaceWith(viewMappingsFromCompletionBtn.cloneNode(true));
+        document.getElementById('viewMappingsFromCompletionBtn').addEventListener('click', showMappingsHistory);
+    }
+
+    if (backFromHistoryBtn) {
+        backFromHistoryBtn.replaceWith(backFromHistoryBtn.cloneNode(true));
+        document.getElementById('backFromHistoryBtn').addEventListener('click', hideMappingsHistory);
+    }
+
+    if (mappingsSearchInput) {
+        mappingsSearchInput.addEventListener('input', handleMappingsSearch);
+    }
+
+    if (downloadMappingsFromHistoryBtn) {
+        downloadMappingsFromHistoryBtn.replaceWith(downloadMappingsFromHistoryBtn.cloneNode(true));
+        document.getElementById('downloadMappingsFromHistoryBtn').addEventListener('click', downloadMappedItems);
+    }
+
+    if (clearAllMappingsBtn) {
+        clearAllMappingsBtn.replaceWith(clearAllMappingsBtn.cloneNode(true));
+        document.getElementById('clearAllMappingsBtn').addEventListener('click', clearAllMappings);
     }
 }
 
@@ -743,6 +784,7 @@ function handleAddSupplier() {
 function renderSuppliersList() {
     const suppliersList = document.getElementById('suppliersList');
     const proceedBtn = document.getElementById('proceedToUploadBtn');
+    const viewMappingsBtn = document.getElementById('viewMappingsBtn');
 
     if (suppliers.length === 0) {
         suppliersList.innerHTML = '<p class="empty-message">No suppliers added yet. Add your first supplier to begin.</p>';
@@ -757,6 +799,12 @@ function renderSuppliersList() {
             </div>
         `).join('');
         proceedBtn.style.display = 'block';
+    }
+
+    // Show view mappings button if there are any mappings
+    const mappings = Storage.getItemMappings();
+    if (viewMappingsBtn) {
+        viewMappingsBtn.style.display = Object.keys(mappings).length > 0 ? 'block' : 'none';
     }
 }
 
@@ -917,9 +965,16 @@ function showCurrentItem() {
     const progress = ((currentItemIndex) / itemsToMap.length) * 100;
     document.getElementById('progressFill').style.width = `${progress}%`;
 
-    // Show finish button if on last item
-    if (currentItemIndex === itemsToMap.length - 1) {
-        document.getElementById('finishMappingBtn').style.display = 'block';
+    // Show/hide previous button
+    const previousBtn = document.getElementById('previousItemBtn');
+    if (previousBtn) {
+        previousBtn.style.display = currentItemIndex > 0 ? 'block' : 'none';
+    }
+
+    // Show finish button if on last item, hide otherwise
+    const finishBtn = document.getElementById('finishMappingBtn');
+    if (finishBtn) {
+        finishBtn.style.display = currentItemIndex === itemsToMap.length - 1 ? 'block' : 'none';
     }
 }
 
@@ -936,6 +991,13 @@ function assignItemToSupplier(supplierName) {
 function skipCurrentItem() {
     currentItemIndex++;
     showCurrentItem();
+}
+
+function previousItem() {
+    if (currentItemIndex > 0) {
+        currentItemIndex--;
+        showCurrentItem();
+    }
 }
 
 function restartMapping() {
@@ -984,6 +1046,181 @@ function downloadMappedItems() {
     window.URL.revokeObjectURL(url);
 
     showToast('Downloaded!', 'success');
+}
+
+// Mappings History Functions
+function showMappingsHistory() {
+    // Hide other sections
+    document.getElementById('supplierManagement').style.display = 'none';
+    document.getElementById('csvUploadSection').style.display = 'none';
+    document.getElementById('itemMappingSection').style.display = 'none';
+    document.getElementById('completionSection').style.display = 'none';
+
+    // Show history section
+    document.getElementById('mappingsHistorySection').style.display = 'block';
+
+    // Reload suppliers and mappings
+    suppliers = Storage.getSuppliers();
+    itemMappings = Storage.getItemMappings();
+
+    // Render the mappings list
+    renderMappingsList();
+}
+
+function hideMappingsHistory() {
+    document.getElementById('mappingsHistorySection').style.display = 'none';
+    document.getElementById('supplierManagement').style.display = 'block';
+    renderSuppliersList();
+}
+
+function renderMappingsList(searchTerm = '') {
+    const mappingsList = document.getElementById('mappingsList');
+    const mappings = Storage.getItemMappings();
+    const allSuppliers = Storage.getSuppliers();
+
+    let mappingsArray = Object.entries(mappings);
+
+    // Filter by search term
+    if (searchTerm) {
+        mappingsArray = mappingsArray.filter(([item, supplier]) =>
+            item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            supplier.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    if (mappingsArray.length === 0) {
+        mappingsList.innerHTML = '<p class="empty-message">No mappings found.</p>';
+        return;
+    }
+
+    // Sort alphabetically by item name
+    mappingsArray.sort((a, b) => a[0].localeCompare(b[0]));
+
+    mappingsList.innerHTML = mappingsArray.map(([item, supplier]) => `
+        <div class="mapping-item">
+            <div class="mapping-item-info">
+                <div class="mapping-item-name">${item}</div>
+                <div class="mapping-item-supplier">Supplier: ${supplier}</div>
+            </div>
+            <div class="mapping-item-actions">
+                <button class="edit-mapping-btn" onclick="editMapping('${escapeHtml(item)}')">
+                    Edit
+                </button>
+                <button class="delete-mapping-btn" onclick="deleteMapping('${escapeHtml(item)}')" title="Delete mapping">
+                    ✕
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleMappingsSearch(event) {
+    const searchTerm = event.target.value.trim();
+    renderMappingsList(searchTerm);
+}
+
+function editMapping(itemName) {
+    const mappings = Storage.getItemMappings();
+    const currentSupplier = mappings[itemName];
+    const allSuppliers = Storage.getSuppliers();
+
+    // Create modal content with supplier dropdown
+    const modalBody = `
+        <div class="edit-mapping-content">
+            <div class="form-group">
+                <label>Item Name:</label>
+                <p style="font-weight: 600; margin-top: 0.5rem;">${itemName}</p>
+            </div>
+            <div class="form-group">
+                <label for="editSupplierSelect">Select Supplier:</label>
+                <select id="editSupplierSelect" class="form-input">
+                    ${allSuppliers.map(supplier => `
+                        <option value="${supplier}" ${supplier === currentSupplier ? 'selected' : ''}>
+                            ${supplier}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+        </div>
+    `;
+
+    // Show custom modal
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const confirmDialog = document.getElementById('confirmDialog');
+
+    confirmTitle.textContent = 'Edit Mapping';
+    confirmMessage.innerHTML = modalBody;
+    confirmOkBtn.textContent = 'Save';
+    confirmOkBtn.className = 'btn btn-primary';
+
+    confirmDialog.classList.add('show');
+
+    const handleSave = () => {
+        const newSupplier = document.getElementById('editSupplierSelect').value;
+        if (newSupplier) {
+            itemMappings[itemName] = newSupplier;
+            Storage.setItemMappings(itemMappings);
+            renderMappingsList(document.getElementById('mappingsSearchInput').value);
+            showToast('Mapping updated!', 'success');
+            updateItemSuggestions();
+        }
+        confirmDialog.classList.remove('show');
+        cleanup();
+    };
+
+    const handleCancel = () => {
+        confirmDialog.classList.remove('show');
+        cleanup();
+    };
+
+    const cleanup = () => {
+        confirmOkBtn.removeEventListener('click', handleSave);
+        confirmCancelBtn.removeEventListener('click', handleCancel);
+        confirmOkBtn.textContent = 'Confirm';
+        confirmOkBtn.className = 'btn btn-danger';
+    };
+
+    confirmOkBtn.addEventListener('click', handleSave);
+    confirmCancelBtn.addEventListener('click', handleCancel);
+}
+
+function deleteMapping(itemName) {
+    showConfirmDialog(
+        'Delete Mapping',
+        `Are you sure you want to delete the mapping for "${itemName}"?`,
+        () => {
+            delete itemMappings[itemName];
+            Storage.setItemMappings(itemMappings);
+            renderMappingsList(document.getElementById('mappingsSearchInput').value);
+            renderSuppliersList(); // Update the view mappings button visibility
+            showToast('Mapping deleted', 'success');
+            updateItemSuggestions();
+        }
+    );
+}
+
+function clearAllMappings() {
+    showConfirmDialog(
+        'Clear All Mappings',
+        'Are you sure you want to delete ALL item-supplier mappings? This cannot be undone.',
+        () => {
+            itemMappings = {};
+            Storage.setItemMappings(itemMappings);
+            renderMappingsList();
+            renderSuppliersList();
+            showToast('All mappings cleared', 'success');
+            updateItemSuggestions();
+        }
+    );
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Update vendor selector with mapped suppliers

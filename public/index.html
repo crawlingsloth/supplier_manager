@@ -119,6 +119,35 @@
                 <button id="proceedToUploadBtn" class="btn btn-primary btn-large" style="display:none;">
                     Next: Upload Items
                 </button>
+                <button id="viewMappingsBtn" class="btn btn-secondary btn-large" style="margin-top: 0.5rem; display:none;">
+                    View All Mappings
+                </button>
+            </section>
+
+            <!-- Mappings History Section -->
+            <section class="mappings-history-section" id="mappingsHistorySection" style="display:none;">
+                <div class="section-header">
+                    <h2>Item Mappings History</h2>
+                    <button id="backFromHistoryBtn" class="btn btn-secondary btn-small">Back</button>
+                </div>
+                <p class="instruction-text">Review and edit your item-supplier mappings below.</p>
+
+                <div class="mappings-search">
+                    <input type="text" id="mappingsSearchInput" placeholder="Search items..." class="form-input">
+                </div>
+
+                <div id="mappingsList" class="mappings-list">
+                    <p class="empty-message">No mappings found.</p>
+                </div>
+
+                <div class="mappings-actions">
+                    <button id="downloadMappingsFromHistoryBtn" class="btn btn-primary">
+                        Download Mappings CSV
+                    </button>
+                    <button id="clearAllMappingsBtn" class="btn btn-danger">
+                        Clear All Mappings
+                    </button>
+                </div>
             </section>
 
             <!-- CSV Upload Section -->
@@ -166,8 +195,11 @@
                 </div>
 
                 <div class="mapping-actions">
+                    <button id="previousItemBtn" class="btn btn-secondary btn-large" style="display:none;">
+                        ← Previous
+                    </button>
                     <button id="skipItemBtn" class="btn btn-secondary btn-large">
-                        Skip Item
+                        Skip Item →
                     </button>
                 </div>
 
@@ -189,6 +221,9 @@
                     <div class="completion-actions">
                         <button id="downloadMappingBtn" class="btn btn-primary btn-large">
                             Download Mapped Items (CSV)
+                        </button>
+                        <button id="viewMappingsFromCompletionBtn" class="btn btn-secondary">
+                            View/Edit Mappings
                         </button>
                         <button id="remapItemsBtn" class="btn btn-secondary">
                             Map More Items

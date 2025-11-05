@@ -833,6 +833,9 @@ body {
 
 .mapping-actions {
     margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
 }
 
 .mapping-footer {
@@ -907,5 +910,185 @@ body {
 
     .mapping-footer {
         flex-direction: column;
+    }
+}
+
+/* Mappings History Section */
+.mappings-history-section {
+    background-color: var(--card-white);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0;
+}
+
+.mappings-search {
+    margin-bottom: 1.5rem;
+}
+
+.mappings-list {
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+}
+
+.mapping-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-gray);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    gap: 1rem;
+}
+
+.mapping-item:hover {
+    background-color: #e0e0e0;
+}
+
+.mapping-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mapping-item-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+}
+
+.mapping-item-supplier {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.mapping-item-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.edit-mapping-btn {
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.edit-mapping-btn:hover {
+    background-color: var(--primary-green-hover);
+}
+
+.delete-mapping-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.delete-mapping-btn:hover {
+    color: var(--danger-red);
+}
+
+.mappings-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-gray);
+}
+
+/* Edit Mapping Modal Content */
+.edit-mapping-content {
+    padding: 1rem 0;
+}
+
+.edit-mapping-content .form-group {
+    margin-bottom: 1rem;
+}
+
+.edit-mapping-content label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.edit-mapping-content select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-gray);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.edit-mapping-content select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+}
+
+/* Mobile Responsive for Mappings History */
+@media (max-width: 768px) {
+    .mappings-history-section {
+        padding: 1.5rem;
+    }
+
+    .mapping-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mapping-item-actions {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .edit-mapping-btn {
+        flex: 1;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .mappings-actions {
+        flex-direction: column;
+    }
+
+    .mappings-actions button {
+        width: 100%;
     }
 }
